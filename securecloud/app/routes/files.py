@@ -12,6 +12,11 @@ files_bp = Blueprint('files', __name__)
 def require_login():
     if 'user_id' not in session:
         return redirect(url_for('auth.login'))
+    user = User.query.get(session['user_id'])
+    if not user:
+        session.clear()
+        flash('Session expired. Please log in again.', 'warning')
+        return redirect(url_for('auth.login'))
 
 @files_bp.route('/dashboard')
 def dashboard():
