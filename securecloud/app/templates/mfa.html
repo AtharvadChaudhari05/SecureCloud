@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 col-lg-5 reveal-anim">
+        <div class="premium-card text-center">
+            <h3 class="mb-3 text-gradient">Verification</h3>
+            
+            <div class="mb-4 d-flex align-items-center justify-content-center bg-light rounded py-2 border shadow-sm mx-auto" style="max-width: 200px;">
+                <span class="text-secondary small fw-medium me-2">Risk Level:</span>
+                {% if risk == 'LOW' %}
+                    <span class="badge badge-low">LOW</span>
+                {% elif risk == 'MEDIUM' %}
+                    <span class="badge badge-med">MEDIUM</span>
+                {% else %}
+                    <span class="badge badge-high">HIGH</span>
+                {% endif %}
+            </div>
+            
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                
+                {% if risk == 'HIGH' %}
+                <div class="text-start p-3 mb-4 rounded border border-danger bg-white shadow-sm position-relative overflow-hidden">
+                    <div class="position-absolute top-0 start-0 w-100 h-100 bg-danger opacity-10"></div>
+                    <div class="position-relative">
+                        <strong class="text-danger d-block mb-1">High Risk Context Detected</strong>
+                        <small class="text-secondary">We've sent a 6-digit verification code directly to your email.</small>
+                    </div>
+                </div>
+                
+                <div class="mb-4 text-start reveal-anim delay-1">
+                    <label class="form-label fw-bold">Email Verification Code</label>
+                    <input type="text" class="form-control text-center fs-5 tracking-widest bg-light" name="email_code" placeholder="000 000" autocomplete="off" required autofocus>
+                </div>
+                {% else %}
+                <div class="mb-4 text-start">
+                    <label class="form-label fw-bold">Authenticator App Code (TOTP)</label>
+                    <input type="text" class="form-control text-center fs-5 tracking-widest bg-light" name="totp_code" placeholder="000 000" autocomplete="off" required autofocus>
+                </div>
+                {% endif %}
+                
+                <button type="submit" class="btn btn-dark w-100 shadow-sm rounded-pill mb-3">Verify & Login</button>
+                
+                <div class="position-relative text-center my-3">
+                    <hr>
+                    <span class="bg-white px-2 position-absolute top-50 start-50 translate-middle text-tertiary small">OR</span>
+                </div>
+                
+                <button type="button" class="btn btn-outline border w-100 shadow-sm rounded-pill d-flex align-items-center justify-content-center gap-2" onclick="showPasskeyModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M2.5 9a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2V9z"/><path fill-rule="evenodd" d="M4.5 4a3.5 3.5 0 1 1 7 0v3h-1V4a2.5 2.5 0 0 0-5 0v3h-1V4z"/></svg>
+                    Use Security Key (Passkey)
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Simulated Passkey Modal -->
+<div class="modal fade" id="passkeyModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Security Key Verification</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div id="passkey-idle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#2563eb" class="mb-3 animation-pulse" viewBox="0 0 16 16">
+                        <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+                    </svg>
+                    <h5 class="fw-bold mb-2">Touch your security key</h5>
+                    <p class="text-secondary small">SecureCloud is requesting to verify your identity using a registered FIDO2 Passkey or Hardware token.</p>
+                </div>
+                <div id="passkey-success" class="d-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#10b981" class="mb-3" viewBox="0 0 16 16">
+                        <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
+                    </svg>
+                    <h5 class="fw-bold text-success">Identity Verified</h5>
+                    <p class="text-secondary small">Cryptographic signature accepted.</p>
+                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" class="btn btn-outline rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form id="passkeyForm" method="POST" action="{{ url_for('auth.passkey_login') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+</form>
+
+<script>
+    function showPasskeyModal() {
+        var myModal = new bootstrap.Modal(document.getElementById('passkeyModal'));
+        myModal.show();
+        
+        // Simulate hardware interaction delay
+        setTimeout(() => {
+            document.getElementById('passkey-idle').classList.add('d-none');
+            document.getElementById('passkey-success').classList.remove('d-none');
+            
+            setTimeout(() => {
+                document.getElementById('passkeyForm').submit();
+            }, 1000);
+        }, 2000);
+    }
+</script>
+{% endblock %}

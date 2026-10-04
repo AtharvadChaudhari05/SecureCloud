@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 col-lg-5 reveal-anim">
+        <div class="premium-card">
+            <h3 class="mb-2 text-center text-gradient form-item-reveal" style="animation-delay: 0.1s;">Welcome Back</h3>
+            <p class="text-secondary text-center small mb-4 form-item-reveal" style="animation-delay: 0.15s;">Log in to your secure file vault.</p>
+            
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                
+                <div class="mb-3 form-item-reveal" style="animation-delay: 0.2s;">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-control" name="username" required>
+                </div>
+                
+                <div class="mb-4 form-item-reveal" style="animation-delay: 0.25s;">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" name="password" required>
+                </div>
+                
+                {% if demo_mode %}
+                <div class="accordion mb-4 form-item-reveal" style="animation-delay: 0.3s;" id="demoAccordion">
+                  <div class="accordion-item border rounded" style="background: transparent;">
+                    <h2 class="accordion-header">
+                      <button class="accordion-button collapsed text-secondary bg-transparent shadow-none small fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#demoCollapse">
+                        Demo Tool: Simulate Context (Risk Engine)
+                      </button>
+                    </h2>
+                    <div id="demoCollapse" class="accordion-collapse collapse" data-bs-parent="#demoAccordion">
+                      <div class="accordion-body border-top bg-light pt-3">
+                        <div class="form-check form-switch mb-3">
+                          <input class="form-check-input" type="checkbox" name="demo_override" value="1" id="demoOverride">
+                          <label class="form-check-label text-secondary small fw-medium" for="demoOverride">Enable Context Override</label>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small">Hour of day (0-23)</label>
+                            <input type="number" class="form-control form-control-sm bg-white" name="hour" value="12" min="0" max="23">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small">Device Hash</label>
+                            <input type="text" class="form-control form-control-sm bg-white" name="device" value="known_device_1">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small">IP Address</label>
+                            <input type="text" class="form-control form-control-sm bg-white" name="ip" value="192.168.1.100">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+                
+                <button type="submit" class="btn btn-primary w-100 mb-3 shadow-sm form-item-reveal" style="animation-delay: 0.35s;">Continue</button>
+                <div class="text-center text-secondary small form-item-reveal" style="animation-delay: 0.4s;">
+                    Don't have an account? <a href="{{ url_for('auth.register') }}" class="fw-semibold text-primary" style="color: var(--accent) !important;">Sign up</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

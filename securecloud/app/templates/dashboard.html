@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="reveal-anim">
+    <!-- Risk Banner -->
+    <div class="premium-card py-3 px-4 mb-4 d-flex align-items-center justify-content-between" style="border-left: 4px solid {% if risk == 'LOW' %}#10b981{% elif risk == 'MEDIUM' %}#f59e0b{% else %}#ef4444{% endif %};">
+        <div class="d-flex align-items-center">
+            <div class="me-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: {% if risk == 'LOW' %}#d1fae5{% elif risk == 'MEDIUM' %}#fef3c7{% else %}#fee2e2{% endif %}; color: {% if risk == 'LOW' %}#065f46{% elif risk == 'MEDIUM' %}#92400e{% else %}#991b1b{% endif %};">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533q.18.085.293.118a1 1 0 0 0 .103.028 1 1 0 0 0 .103-.028q.113-.033.293-.118c.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.655-.197-1.593-.458-2.837-.856-1.028-.328-2.114-.65-2.992-.85a1 1 0 0 0-.722 0c-.878.2-1.964.522-2.992.85M8 14.916a1 1 0 0 1-.097-.024q-.165-.05-.386-.145c-.26-.114-.582-.28-.934-.515a12 12 0 0 1-2.55-2.292c-1.63-2.14-2.83-5.234-2.316-9.155a1.5 1.5 0 0 1 1.02-1.22c1.173-.352 2.373-.708 3.327-.92a2 2 0 0 1 1.212 0c.954.212 2.154.568 3.327.92a1.5 1.5 0 0 1 1.02 1.22c.514 3.921-.686 7.015-2.316 9.155a12 12 0 0 1-2.55 2.292c-.352.235-.674.401-.934.515q-.22.095-.386.145a1 1 0 0 1-.097.024"/>
+                  <path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                </svg>
+            </div>
+            <div>
+                <h5 class="mb-0 fw-bold text-gradient">Welcome, {{ user.username }}</h5>
+                <small class="text-secondary fw-medium">Active Session</small>
+            </div>
+        </div>
+        <div class="text-end">
+            <small class="text-secondary d-block fw-medium">Evaluated Risk Score</small>
+            <span class="badge badge-{% if risk == 'LOW' %}low{% elif risk == 'MEDIUM' %}med{% else %}high{% endif %} fs-6 px-3">{{ risk }}</span>
+        </div>
+    </div>
+
+    <!-- Analytics Section -->
+    {% set total_files = files|length %}
+    {% set public_files = files|selectattr("sensitivity", "equalto", 0)|list|length %}
+    {% set internal_files = files|selectattr("sensitivity", "equalto", 1)|list|length %}
+    {% set conf_files = files|selectattr("sensitivity", "equalto", 2)|list|length %}
+    
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="premium-card p-3 text-center scroll-reveal stagger-1" style="border-bottom: 3px solid var(--text-primary);">
+                <h3 class="fw-bold mb-1">{{ total_files }}</h3>
+                <span class="text-secondary small fw-medium">Total Uploads</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="premium-card p-3 text-center scroll-reveal stagger-2" style="border-bottom: 3px solid #64748b;">
+                <h3 class="fw-bold mb-1">{{ public_files }}</h3>
+                <span class="text-secondary small fw-medium">Public Files</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="premium-card p-3 text-center scroll-reveal stagger-3" style="border-bottom: 3px solid #3b82f6;">
+                <h3 class="fw-bold mb-1">{{ internal_files }}</h3>
+                <span class="text-secondary small fw-medium">Internal Files</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="premium-card p-3 text-center scroll-reveal stagger-4" style="border-bottom: 3px solid #ef4444;">
+                <h3 class="fw-bold mb-1">{{ conf_files }}</h3>
+                <span class="text-secondary small fw-medium">Confidential Files</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Upload Card -->
+        <div class="col-lg-4">
+            <div class="premium-card h-100 reveal-anim delay-1">
+                <ul class="nav nav-pills custom-pills-black mb-4" id="uploadTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active rounded-pill px-4 py-2 fw-medium small" id="file-tab" data-bs-toggle="pill" data-bs-target="#fileUpload" type="button" role="tab">File Upload</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill px-4 py-2 fw-medium small ms-2" id="note-tab" data-bs-toggle="pill" data-bs-target="#secureNote" type="button" role="tab">Secure Note</button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="uploadTabContent">
+                    <!-- File Upload Form -->
+                    <div class="tab-pane fade show active" id="fileUpload" role="tabpanel">
+                        <form action="{{ url_for('files.upload') }}" method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-medium text-secondary">Select File (Max 10MB)</label>
+                                <div class="position-relative">
+                                    <input class="form-control bg-light" type="file" name="file" required style="padding: 10px 15px; border: 2px dashed #e2e8f0; border-radius: 12px; cursor: pointer;">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-medium text-secondary">Data Sensitivity</label>
+                                <select class="form-select bg-light" name="sensitivity" style="border-radius: 10px;">
+                                    <option value="0">Public (Standard)</option>
+                                    <option value="1">Internal (Elevated)</option>
+                                    <option value="2">Confidential (Maximum)</option>
+                                </select>
+                                <div class="form-text text-tertiary mt-2">
+                                    Encryption cipher will be chosen dynamically.
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-dark w-100 rounded-pill py-2 shadow-sm">
+                                <span class="d-flex align-items-center justify-content-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/></svg>
+                                    Encrypt & Upload
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Secure Note Form -->
+                    <div class="tab-pane fade" id="secureNote" role="tabpanel">
+                        <form action="{{ url_for('files.upload_note') }}" method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-medium text-secondary">Note Title</label>
+                                <input type="text" class="form-control bg-light" name="note_title" placeholder="e.g. Crypto Recovery Seed" required style="border-radius: 10px;">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-medium text-secondary">Secret Content</label>
+                                <textarea class="form-control bg-light" name="note_content" rows="4" placeholder="Type your highly sensitive data here..." required style="border-radius: 10px;"></textarea>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-medium text-secondary">Data Sensitivity</label>
+                                <select class="form-select bg-light" name="sensitivity" style="border-radius: 10px;">
+                                    <option value="1">Internal</option>
+                                    <option value="2" selected>Confidential (Maximum)</option>
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-dark w-100 rounded-pill py-2 shadow-sm">
+                                <span class="d-flex align-items-center justify-content-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M2.5 9a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2V9z"/><path fill-rule="evenodd" d="M4.5 4a3.5 3.5 0 1 1 7 0v3h-1V4a2.5 2.5 0 0 0-5 0v3h-1V4z"/></svg>
+                                    Encrypt & Store Note
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Files List -->
+        <div class="col-lg-8">
+            <div class="premium-card h-100 reveal-anim delay-2">
+                <h4 class="mb-4">My Vault</h4>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>File Details</th>
+                                <th>Sensitivity</th>
+                                <th>Applied Cipher</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in files %}
+                            <tr>
+                                <td>
+                                    <div class="fw-medium text-primary mb-1">{{ file.original_name }}</div>
+                                    <div class="text-tertiary small d-flex gap-2">
+                                        <span>{{ (file.size / 1024)|round(1) }} KB</span> &bull; 
+                                        <span>{{ file.created_at.strftime('%Y-%m-%d') }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if file.sensitivity == 0 %}<span class="badge bg-light text-secondary border">Public</span>
+                                    {% elif file.sensitivity == 1 %}<span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle">Internal</span>
+                                    {% else %}<span class="badge badge-high">Confidential</span>{% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge badge-cipher">{{ file.algo }}</span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline shadow-sm download-trigger-btn" data-file-url="{{ url_for('files.download', file_id=file.id) }}">↓ Download</button>
+                                        <form action="{{ url_for('files.shred_file', file_id=file.id) }}" method="POST" class="d-inline">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                            <button type="submit" class="btn btn-sm text-white shadow-sm border-0 d-flex align-items-center gap-1" style="background-color: #ef4444;" title="Securely shred this file">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                                                Secure Shred
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-tertiary py-5">
+                                    <div class="mb-3"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-inbox" viewBox="0 0 16 16"><path d="M4.98 4a.5.5 0 0 0-.39.188L1.54 8H6a.5.5 0 0 1 .5.5 1.5 1.5 0 1 0 3 0A.5.5 0 0 1 10 8h4.46l-3.05-3.812A.5.5 0 0 0 11.02 4H4.98zm-1.17-.437A1.5 1.5 0 0 1 4.98 3h6.04a1.5 1.5 0 0 1 1.17.563l3.7 4.625a.5.5 0 0 1 .106.311l-.106.002v5.5a1.5 1.5 0 0 1-1.5 1.5H1.5A1.5 1.5 0 0 1 0 14V8.5a.5.5 0 0 1 .1-.312l3.71-4.625zM1 8.5v5.5a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-5.5h-4.305a2.498 2.498 0 0 1-4.39 0H1z"/></svg></div>
+                                    Your vault is empty. Upload a file securely to get started.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login History -->
+    <div class="premium-card reveal-anim delay-3">
+        <h4 class="mb-4">Recent Login Activity</h4>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>IP Address</th>
+                        <th>ML Risk Evaluation</th>
+                        <th>Outcome</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ev in history %}
+                    <tr>
+                        <td class="fw-medium">{{ ev.ts.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="font-monospace text-secondary small bg-light rounded px-2 py-1 d-inline-block mt-2 border">{{ ev.ip }}</td>
+                        <td>
+                            {% if ev.risk_label == 'LOW' %}<span class="badge badge-low">LOW</span>
+                            {% elif ev.risk_label == 'MEDIUM' %}<span class="badge badge-med">MEDIUM</span>
+                            {% else %}<span class="badge badge-high">HIGH</span>{% endif %}
+                            <small class="text-tertiary ms-2 fw-medium">Score: {{ "%.2f"|format(ev.risk_prob|default(0)) }}</small>
+                        </td>
+                        <td>
+                            {% if ev.outcome == 'success' %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">Success</span>
+                            {% elif ev.outcome == 'fail' %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">Failed</span>
+                            {% else %}
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border">Pending MFA</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Zero-Trust Download Gate Modal -->
+<div class="modal fade" id="downloadSecurityModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content premium-card border-0 p-3">
+            <div class="modal-header border-0 pb-0 justify-content-center position-relative">
+                <button type="button" class="btn-close position-absolute end-0 top-0 me-3 mt-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="mb-3 d-flex align-items-center justify-content-center rounded-circle" style="width: 64px; height: 64px; background: rgba(250, 204, 21, 0.1); color: var(--accent);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
+                    </div>
+                    <h5 class="modal-title fw-bold">Zero-Trust Verification</h5>
+                    <p class="text-secondary small mt-1 mb-0 px-3">Session hijacking protection is active. Please re-authenticate your human identity to decrypt and download this file.</p>
+                </div>
+            </div>
+            <div class="modal-body text-center py-4">
+                
+                <div id="downloadSimulatedScanner" class="d-none flex-column align-items-center mb-4 mt-2">
+                    <div class="position-relative d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <div class="position-absolute w-100 h-100 rounded-circle border border-2 border-warning opacity-25" style="animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+                        <div class="position-absolute rounded-circle bg-warning opacity-10" style="width: 60px; height: 60px;"></div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="var(--accent)" viewBox="0 0 16 16"><path d="M8.5 1.5A1.5 1.5 0 0 1 10 0h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h6c-.314.418-.5.937-.5 1.5v6h-2a.5.5 0 0 0-.354.854l2.5 2.5a.5.5 0 0 0 .708 0l2.5-2.5A.5.5 0 0 0 10.5 7.5h-2v-6z"/></svg>
+                    </div>
+                    <div class="fw-medium text-warning" id="downloadScannerText">Awaiting Security Key...</div>
+                    <div class="small text-secondary mt-1">Touch your hardware token or use biometric scanner</div>
+                </div>
+
+                <div id="downloadSuccessState" class="d-none flex-column align-items-center mt-2 mb-3">
+                    <div class="mb-3 rounded-circle bg-success d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; color: white;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/></svg>
+                    </div>
+                    <h5 class="fw-bold text-success">Identity Verified</h5>
+                    <p class="text-secondary small">Initiating secure decryption stream...</p>
+                </div>
+
+                <button type="button" class="btn btn-dark w-100 rounded-pill py-2 shadow-sm" id="btnTriggerDownloadAuth">
+                    <span class="d-flex align-items-center justify-content-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
+                        Authenticate & Download
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let activeDownloadUrl = "";
+        const modal = new bootstrap.Modal(document.getElementById('downloadSecurityModal'));
+        const scannerArea = document.getElementById('downloadSimulatedScanner');
+        const successArea = document.getElementById('downloadSuccessState');
+        const authBtn = document.getElementById('btnTriggerDownloadAuth');
+        const scannerText = document.getElementById('downloadScannerText');
+
+        // Hook up all download buttons
+        document.querySelectorAll('.download-trigger-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                activeDownloadUrl = this.getAttribute('data-file-url');
+                
+                // Reset modal state
+                scannerArea.classList.add('d-none');
+                successArea.classList.add('d-none');
+                authBtn.classList.remove('d-none');
+                scannerText.innerText = "Awaiting Security Key...";
+                
+                modal.show();
+            });
+        });
+
+        // Handle the authentication button click
+        authBtn.addEventListener('click', function() {
+            authBtn.classList.add('d-none');
+            scannerArea.classList.remove('d-none');
+            scannerArea.classList.add('d-flex');
+            
+            // Simulate the passkey/biometric process
+            setTimeout(() => {
+                scannerText.innerText = "Verifying Cryptographic Signature...";
+                
+                setTimeout(() => {
+                    scannerArea.classList.add('d-none');
+                    scannerArea.classList.remove('d-flex');
+                    successArea.classList.remove('d-none');
+                    successArea.classList.add('d-flex');
+                    
+                    // Actually trigger the download and close modal
+                    setTimeout(() => {
+                        window.location.href = activeDownloadUrl;
+                        setTimeout(() => modal.hide(), 500);
+                    }, 1000);
+                }, 1200);
+            }, 1000);
+        });
+    });
+</script>
+
+<style>
+    @keyframes ping {
+        75%, 100% {
+            transform: scale(2);
+            opacity: 0;
+        }
+    }
+</style>
+
+{% endblock %}

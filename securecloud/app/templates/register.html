@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 col-lg-5 reveal-anim">
+        <div class="premium-card">
+            <h3 class="mb-2 text-center text-gradient form-item-reveal" style="animation-delay: 0.1s;">Create Account</h3>
+            <p class="text-secondary text-center small mb-4 form-item-reveal" style="animation-delay: 0.15s;">Start your secure cloud journey today.</p>
+            
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                
+                <div class="mb-3 form-item-reveal" style="animation-delay: 0.2s;">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-control" name="username" required>
+                </div>
+                
+                <div class="mb-3 form-item-reveal" style="animation-delay: 0.25s;">
+                    <label class="form-label">Email address</label>
+                    <input type="email" class="form-control" name="email" required>
+                </div>
+                
+                <div class="mb-4 form-item-reveal" style="animation-delay: 0.3s;">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" name="password" required>
+                    <div class="form-text text-tertiary mt-2" style="font-size: 0.75rem;">
+                        Min 8 chars, 1 letter, 1 digit, 1 symbol.
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100 mb-3 shadow-sm form-item-reveal" style="animation-delay: 0.35s;">Continue</button>
+                <div class="text-center text-secondary small form-item-reveal" style="animation-delay: 0.4s;">
+                    Already have an account? <a href="{{ url_for('auth.login') }}" class="fw-semibold text-primary" style="color: var(--accent) !important;">Log in</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

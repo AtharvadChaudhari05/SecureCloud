@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="reveal-anim">
+    <div class="d-flex align-items-center justify-content-between mb-5">
+        <h2 class="mb-0 text-gradient">AI Engines Report</h2>
+        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle fs-6 px-3 py-2">System Health: Optimal</span>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Risk Model -->
+        <div class="col-lg-6">
+            <div class="premium-card h-100 reveal-anim delay-1">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-primary text-white rounded p-2 me-3 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+                    </div>
+                    <h4 class="mb-0">Contextual Risk Classifier</h4>
+                </div>
+                
+                <p class="text-secondary small mb-4">A Random Forest model evaluating login context (time, velocity, device/IP history, failure rates) to output a dynamic risk score.</p>
+                
+                <h6 class="fw-semibold mb-3">Model Performance Metrics (Test Set)</h6>
+                {% if risk_metrics %}
+                <div class="table-responsive mb-4">
+                    <table class="table table-sm text-sm">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Precision</th>
+                                <th>Recall</th>
+                                <th>F1-Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="badge badge-low">LOW</span></td>
+                                <td>{{ "%.2f"|format(risk_metrics['0']['precision']) }}</td>
+                                <td>{{ "%.2f"|format(risk_metrics['0']['recall']) }}</td>
+                                <td>{{ "%.2f"|format(risk_metrics['0']['f1-score']) }}</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-med">MEDIUM</span></td>
+                                <td>{{ "%.2f"|format(risk_metrics['1']['precision']) }}</td>
+                                <td>{{ "%.2f"|format(risk_metrics['1']['recall']) }}</td>
+                                <td>{{ "%.2f"|format(risk_metrics['1']['f1-score']) }}</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-high">HIGH</span></td>
+                                <td>{{ "%.2f"|format(risk_metrics['2']['precision']) }}</td>
+                                <td><span class="text-danger fw-bold">{{ "%.2f"|format(risk_metrics['2']['recall']) }}</span></td>
+                                <td>{{ "%.2f"|format(risk_metrics['2']['f1-score']) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-light border">Metrics not available. Ensure training script has completed.</div>
+                {% endif %}
+                
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="bg-light p-2 rounded border text-center shadow-sm">
+                            <h6 class="text-secondary small mt-2">Confusion Matrix</h6>
+                            <img src="{{ url_for('static', filename='img/confusion_matrix.png') }}" class="img-fluid mix-blend-multiply" alt="Confusion Matrix">
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="bg-light p-2 rounded border text-center shadow-sm">
+                            <h6 class="text-secondary small mt-2">Feature Importance</h6>
+                            <img src="{{ url_for('static', filename='img/feature_importance.png') }}" class="img-fluid mix-blend-multiply" alt="Feature Importance">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crypto Policy Model -->
+        <div class="col-lg-6">
+            <div class="premium-card h-100 reveal-anim delay-2">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-success text-white rounded p-2 me-3 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M2.5 9a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2V9z"/><path fill-rule="evenodd" d="M4.5 4a3.5 3.5 0 1 1 7 0v3h-1V4a2.5 2.5 0 0 0-5 0v3h-1V4z"/></svg>
+                    </div>
+                    <h4 class="mb-0">Adaptive Cryptography Policy</h4>
+                </div>
+                
+                <p class="text-secondary small mb-4">A Decision Tree model selecting the optimal AES/ChaCha cipher variant dynamically based on data sensitivity, size, and real-time session risk.</p>
+                
+                <h6 class="fw-semibold mb-3">Model Logic (Tree Representation)</h6>
+                <div class="bg-light p-2 rounded border text-center overflow-auto shadow-sm mb-4" style="max-height: 400px;">
+                    <img src="{{ url_for('static', filename='img/crypto_tree.png') }}" class="img-fluid mix-blend-multiply" alt="Decision Tree">
+                </div>
+                
+                <h6 class="fw-semibold mb-3">Symmetric Cipher Benchmarks (1MB payload)</h6>
+                {% if benchmark %}
+                <div class="table-responsive border rounded bg-light p-3">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Algorithm Specification</th>
+                                <th class="text-end">Execution Time (ms)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cipher, ms in benchmark.items() %}
+                            <tr>
+                                <td class="fw-medium text-secondary">{{ cipher }}</td>
+                                <td class="text-end font-monospace">{{ "%.3f"|format(ms) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-light border">Benchmark not available.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="reveal-anim">
+    
+    <div class="d-flex align-items-center mb-4">
+        <div class="d-flex align-items-center justify-content-center rounded-circle shadow-sm me-3" style="width: 64px; height: 64px; overflow: hidden; border: 2px solid #e2e8f0;">
+            <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=4285f4&color=fff&size=64&bold=true&font-size=0.4" alt="Google Profile" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div>
+            <h3 class="fw-bold mb-0 text-gradient">{{ user.username }}'s Profile</h3>
+            <p class="text-secondary mb-0">{{ user.email }}</p>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Authentication Status -->
+        <div class="col-md-4">
+            <div class="premium-card h-100 p-4 scroll-reveal stagger-1">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h6 class="fw-bold text-secondary mb-0">MFA Status</h6>
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle">Properly Secured</span>
+                </div>
+                <div class="d-flex align-items-center mt-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#10b981" class="me-2" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
+                    <span class="fw-medium">Authenticator (TOTP) Active</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Analytics -->
+        <div class="col-md-8">
+            <div class="premium-card h-100 p-4 scroll-reveal stagger-2">
+                <h6 class="fw-bold text-secondary mb-3">Authentication Analytics</h6>
+                <div class="row text-center">
+                    <div class="col-4 border-end">
+                        <h2 class="fw-bold mb-1">{{ total_logins }}</h2>
+                        <span class="small text-secondary">Total Logins</span>
+                    </div>
+                    <div class="col-4 border-end">
+                        <h2 class="fw-bold mb-1 text-success">{{ successful_logins }}</h2>
+                        <span class="small text-secondary">Successful</span>
+                    </div>
+                    <div class="col-4">
+                        <h2 class="fw-bold mb-1 text-danger">{{ failed_logins }}</h2>
+                        <span class="small text-secondary">Blocked / Failed</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complete User Activity Log -->
+    <div class="premium-card scroll-reveal stagger-3">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0">Complete Security Audit Log</h4>
+            <span class="badge bg-light text-secondary border">Immutable Log</span>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Device IP</th>
+                        <th>ML Risk Score</th>
+                        <th>Outcome</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ev in history %}
+                    <tr>
+                        <td class="fw-medium text-secondary">{{ ev.ts.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td><span class="font-monospace text-secondary small bg-light rounded px-2 py-1 border">{{ ev.ip }}</span></td>
+                        <td>
+                            {% if ev.risk_label == 'LOW' %}<span class="badge badge-low">LOW</span>
+                            {% elif ev.risk_label == 'MEDIUM' %}<span class="badge badge-med">MEDIUM</span>
+                            {% else %}<span class="badge badge-high">HIGH</span>{% endif %}
+                            <small class="text-tertiary ms-1">({{ "%.2f"|format(ev.risk_prob|default(0)) }})</small>
+                        </td>
+                        <td>
+                            {% if ev.outcome == 'success' %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" class="me-1" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/></svg> Verified</span>
+                            {% elif ev.outcome == 'fail' %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">Blocked</span>
+                            {% else %}
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border">Challenged</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-tertiary py-4">No activity logged yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

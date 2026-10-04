@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row align-items-center justify-content-center text-center min-vh-75 mt-4">
+    <div class="col-lg-10">
+        <!-- Aceternity style badge -->
+        <div class="reveal-anim mb-4 d-inline-block">
+            <span class="badge bg-white text-secondary shadow-sm" style="border: 1px solid var(--border-color); padding: 8px 16px; font-size: 0.85rem;">
+                ✨ Introducing Context-Aware Intelligence
+            </span>
+        </div>
+        
+        <h1 class="display-3 fw-bold mb-4 reveal-anim delay-1 text-gradient" style="line-height: 1.1;">
+            Intelligent cloud storage.<br>Adapts to your security needs.
+        </h1>
+        
+        <p class="lead text-secondary mb-5 reveal-anim delay-2 mx-auto" style="max-width: 600px; font-size: 1.15rem;">
+            A next-generation file vault powered by Machine Learning. We adapt your authentication requirements based on session risk, and select encryption ciphers automatically based on data sensitivity.
+        </p>
+        
+        <div class="d-flex gap-3 justify-content-center mt-4 reveal-anim delay-3">
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('files.dashboard') }}" class="btn btn-hover-black btn-lg px-5 rounded-pill shadow-sm">Go to Dashboard</a>
+            {% else %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-hover-black btn-lg px-5 rounded-pill shadow-sm">Start for free</a>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-hover-black btn-lg px-5 rounded-pill shadow-sm">Sign in</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5 pt-5 justify-content-center g-5 pb-5">
+    <!-- MagicUI style feature cards -->
+    <div class="col-md-5 scroll-reveal scroll-reveal-container stagger-1">
+        <div class="premium-card h-100 text-center heavy-float" style="padding: 3.5rem 2.5rem;">
+            <div class="mb-4 d-inline-flex align-items-center justify-content-center rounded-circle bg-light shadow-sm reveal-child reveal-child-1" style="width:80px;height:80px; color: #2563eb;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+                </svg>
+            </div>
+            <h3 class="fw-bold mb-3 text-gradient reveal-child reveal-child-2">Adaptive MFA</h3>
+            <p class="text-secondary reveal-child reveal-child-3" style="font-size: 1.1rem; line-height: 1.6;">Our <strong style="color: #2563eb;">ML engine</strong> analyzes login context in real-time. Unrecognized devices or risky IPs automatically trigger secondary email verification.</p>
+        </div>
+    </div>
+    
+    <div class="col-md-5 scroll-reveal scroll-reveal-container stagger-2">
+        <div class="premium-card h-100 text-center heavy-float heavy-float-delay" style="padding: 3.5rem 2.5rem;">
+            <div class="mb-4 d-inline-flex align-items-center justify-content-center rounded-circle bg-light shadow-sm reveal-child reveal-child-1" style="width:80px;height:80px; color: #10b981;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
+                </svg>
+            </div>
+            <h3 class="fw-bold mb-3 text-gradient reveal-child reveal-child-2">Context Cryptography</h3>
+            <p class="text-secondary reveal-child reveal-child-3" style="font-size: 1.1rem; line-height: 1.6;">Files are encrypted differently. Highly sensitive documents receive <strong style="color: #10b981;">AES-256-GCM</strong> or <strong style="color: #10b981;">ChaCha20</strong> automatically, wrapping keys intelligently.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
