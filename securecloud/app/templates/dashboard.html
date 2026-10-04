@@ -170,14 +170,11 @@
                                 </td>
                                 <td class="text-end">
                                     <div class="d-flex justify-content-end gap-2">
-                                        <button type="button" class="btn btn-sm btn-outline shadow-sm download-trigger-btn" data-file-url="{{ url_for('files.download', file_id=file.id) }}">↓ Download</button>
-                                        <form action="{{ url_for('files.shred_file', file_id=file.id) }}" method="POST" class="d-inline">
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                                            <button type="submit" class="btn btn-sm text-white shadow-sm border-0 d-flex align-items-center gap-1" style="background-color: #ef4444;" title="Securely shred this file">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
-                                                Secure Shred
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-sm btn-outline shadow-sm" onclick="openActionModal({{ file.id }}, 'download')">↓ Download</button>
+                                        <button type="button" class="btn btn-sm text-white shadow-sm border-0 d-flex align-items-center gap-1" style="background-color: #ef4444;" title="Securely shred this file" onclick="openActionModal({{ file.id }}, 'shred')">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                                            Secure Shred
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -237,8 +234,8 @@
     </div>
 </div>
 
-<!-- Zero-Trust Download Gate Modal -->
-<div class="modal fade" id="downloadSecurityModal" tabindex="-1" aria-hidden="true">
+<!-- Zero-Trust Action Modal -->
+<div class="modal fade" id="actionSecurityModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content premium-card border-0 p-3">
             <div class="modal-header border-0 pb-0 justify-content-center position-relative">
@@ -247,91 +244,34 @@
                     <div class="mb-3 d-flex align-items-center justify-content-center rounded-circle" style="width: 64px; height: 64px; background: rgba(250, 204, 21, 0.1); color: var(--accent);">
                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
                     </div>
-                    <h5 class="modal-title fw-bold">Zero-Trust Verification</h5>
-                    <p class="text-secondary small mt-1 mb-0 px-3">Session hijacking protection is active. Please re-authenticate your human identity to decrypt and download this file.</p>
+                    <h5 class="modal-title fw-bold" id="actionModalTitle">Zero-Trust Verification</h5>
+                    <p class="text-secondary small mt-1 mb-0 px-3">Session hijacking protection is active. Please re-authenticate your human identity to perform this action.</p>
                 </div>
             </div>
-            <div class="modal-body text-center py-4">
-                
-                <div id="downloadSimulatedScanner" class="d-none flex-column align-items-center mb-4 mt-2">
-                    <div class="position-relative d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
-                        <div class="position-absolute w-100 h-100 rounded-circle border border-2 border-warning opacity-25" style="animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
-                        <div class="position-absolute rounded-circle bg-warning opacity-10" style="width: 60px; height: 60px;"></div>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="var(--accent)" viewBox="0 0 16 16"><path d="M8.5 1.5A1.5 1.5 0 0 1 10 0h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h6c-.314.418-.5.937-.5 1.5v6h-2a.5.5 0 0 0-.354.854l2.5 2.5a.5.5 0 0 0 .708 0l2.5-2.5A.5.5 0 0 0 10.5 7.5h-2v-6z"/></svg>
+            <div class="modal-body py-4">
+                <form id="actionSecurityForm" method="POST" action="">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="action" id="modalActionName" value=""/>
+                    <div class="mb-4 text-start">
+                        <label class="form-label fw-bold">Authenticator App Code (TOTP)</label>
+                        <input type="text" class="form-control text-center fs-5 tracking-widest bg-light" name="totp_code" placeholder="000 000" autocomplete="off" required autofocus>
                     </div>
-                    <div class="fw-medium text-warning" id="downloadScannerText">Awaiting Security Key...</div>
-                    <div class="small text-secondary mt-1">Touch your hardware token or use biometric scanner</div>
-                </div>
-
-                <div id="downloadSuccessState" class="d-none flex-column align-items-center mt-2 mb-3">
-                    <div class="mb-3 rounded-circle bg-success d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; color: white;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/></svg>
-                    </div>
-                    <h5 class="fw-bold text-success">Identity Verified</h5>
-                    <p class="text-secondary small">Initiating secure decryption stream...</p>
-                </div>
-
-                <button type="button" class="btn btn-dark w-100 rounded-pill py-2 shadow-sm" id="btnTriggerDownloadAuth">
-                    <span class="d-flex align-items-center justify-content-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
-                        Authenticate & Download
-                    </span>
-                </button>
+                    <button type="submit" class="btn btn-dark w-100 rounded-pill py-2 shadow-sm">
+                        Verify & Proceed
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        let activeDownloadUrl = "";
-        const modal = new bootstrap.Modal(document.getElementById('downloadSecurityModal'));
-        const scannerArea = document.getElementById('downloadSimulatedScanner');
-        const successArea = document.getElementById('downloadSuccessState');
-        const authBtn = document.getElementById('btnTriggerDownloadAuth');
-        const scannerText = document.getElementById('downloadScannerText');
-
-        // Hook up all download buttons
-        document.querySelectorAll('.download-trigger-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                activeDownloadUrl = this.getAttribute('data-file-url');
-                
-                // Reset modal state
-                scannerArea.classList.add('d-none');
-                successArea.classList.add('d-none');
-                authBtn.classList.remove('d-none');
-                scannerText.innerText = "Awaiting Security Key...";
-                
-                modal.show();
-            });
-        });
-
-        // Handle the authentication button click
-        authBtn.addEventListener('click', function() {
-            authBtn.classList.add('d-none');
-            scannerArea.classList.remove('d-none');
-            scannerArea.classList.add('d-flex');
-            
-            // Simulate the passkey/biometric process
-            setTimeout(() => {
-                scannerText.innerText = "Verifying Cryptographic Signature...";
-                
-                setTimeout(() => {
-                    scannerArea.classList.add('d-none');
-                    scannerArea.classList.remove('d-flex');
-                    successArea.classList.remove('d-none');
-                    successArea.classList.add('d-flex');
-                    
-                    // Actually trigger the download and close modal
-                    setTimeout(() => {
-                        window.location.href = activeDownloadUrl;
-                        setTimeout(() => modal.hide(), 500);
-                    }, 1000);
-                }, 1200);
-            }, 1000);
-        });
-    });
+    function openActionModal(fileId, actionName) {
+        document.getElementById('actionSecurityForm').action = "/action/" + fileId + "/verify";
+        document.getElementById('modalActionName').value = actionName;
+        document.getElementById('actionModalTitle').innerText = actionName === 'shred' ? 'Verify Shred' : 'Verify Download';
+        new bootstrap.Modal(document.getElementById('actionSecurityModal')).show();
+    }
 </script>
 
 <style>

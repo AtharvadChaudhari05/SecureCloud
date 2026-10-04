@@ -41,5 +41,33 @@ def seed():
         print(f"TOTP Secret: {secret}")
         print("="*50 + "\n")
 
+        # Create sample files
+        from app.models import File
+        from app.services.crypto_service import encrypt_file_data, choose_cipher
+        import uuid
+
+        # Create a sample text file
+        sample_text = b"This is a highly confidential document."
+        cipher_class = choose_cipher(2, 0, 1) # Sensitivity 2, Risk 0, Size 1KB
+        ct, nonce, wrap, algo = encrypt_file_data(sample_text, cipher_class, b"demo_user_1")
+        
+        file_id = str(uuid.uuid4())
+        with open(f"storage/{file_id}.bin", 'wb') as f:
+            f.write(ct)
+            
+        f1 = File(
+            id=file_id,
+            user_id=user.id,
+            original_name="Confidential_Report.txt",
+            size=len(sample_text),
+            sensitivity=2,
+            algo=algo.decode(),
+            nonce=nonce,
+            wrapped_key=wrap
+        )
+        db.session.add(f1)
+        db.session.commit()
+        print("Sample encrypted file created.")
+
 if __name__ == '__main__':
     seed()

@@ -15,14 +15,28 @@ def choose_cipher(sensitivity: int, session_risk: int, size_kb: int) -> int:
     
     return int(app.crypto_policy_model.predict(features)[0])
 
+import base64
+
 def get_master_key() -> bytes:
+    env_key = os.environ.get('MASTER_KEY_B64')
+    if env_key:
+        return base64.b64decode(env_key)
+
     key_path = os.path.join(app.config.Config.STORAGE_FOLDER, 'master.key')
     if not os.path.exists(key_path):
         key = os.urandom(32)
         with open(key_path, 'wb') as f:
             f.write(key)
-        os.chmod(key_path, 0o600)
+        try:
+            os.chmod(key_path, 0o600)
+        except Exception:
+            pass
     else:
+        # Check permissions if not in demo
+        if not os.environ.get('DEMO_MODE') and os.name != 'nt':
+            st = os.stat(key_path)
+            if st.st_mode & 0o077:
+                raise PermissionError("master.key is world-readable! Aborting.")
         with open(key_path, 'rb') as f:
             key = f.read()
     return key

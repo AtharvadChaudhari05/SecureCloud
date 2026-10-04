@@ -146,8 +146,59 @@ def upload_note():
     flash(f'Secure note encrypted with {algo_name.decode()} and stored.', 'success')
     return redirect(url_for('files.dashboard'))
 
+from datetime import datetime, timedelta
+from app.services.auth_service import verify_totp, is_locked_out, record_failed_attempt
+from app.models import AccessEvent
+
+@files_bp.route('/action/<int:file_id>/verify', methods=['POST'])
+def verify_action(file_id):
+    user = User.query.get(session['user_id'])
+    if is_locked_out(user):
+        flash('Account locked due to multiple failed attempts.', 'danger')
+        return redirect(url_for('files.dashboard'))
+        
+    totp_code = request.form.get('totp_code')
+    action = request.form.get('action', 'download')
+    
+    if verify_totp(user.totp_secret, totp_code):
+        session['action_grant'] = {
+            'file_id': file_id,
+            'user_id': user.id,
+            'action': action,
+            'expires_at': (datetime.utcnow() + timedelta(seconds=120)).timestamp()
+        }
+        event = AccessEvent(user_id=user.id, file_id=file_id, action=action, outcome='success')
+        db.session.add(event)
+        db.session.commit()
+        
+        if action == 'shred':
+            return redirect(url_for('files.shred_file', file_id=file_id))
+        return redirect(url_for('files.download', file_id=file_id))
+    else:
+        record_failed_attempt(user)
+        event = AccessEvent(user_id=user.id, file_id=file_id, action=action, outcome='fail')
+        db.session.add(event)
+        db.session.commit()
+        flash('Invalid TOTP code.', 'danger')
+        return redirect(url_for('files.dashboard'))
+
+def check_action_grant(file_id, action):
+    grant = session.get('action_grant')
+    if not grant: return False
+    if grant['file_id'] != file_id or grant['user_id'] != session['user_id'] or grant['action'] != action:
+        return False
+    if datetime.utcnow().timestamp() > grant['expires_at']:
+        session.pop('action_grant')
+        return False
+    session.pop('action_grant')
+    return True
+
 @files_bp.route('/download/<int:file_id>')
 def download(file_id):
+    if not check_action_grant(file_id, 'download'):
+        flash('Download unauthorized or grant expired. Please verify again.', 'danger')
+        return redirect(url_for('files.dashboard'))
+        
     record = FileRecord.query.get_or_404(file_id)
     if record.owner_id != session['user_id']:
         abort(403)
@@ -180,8 +231,12 @@ def download(file_id):
         download_name=record.original_name
     )
 
-@files_bp.route('/shred/<int:file_id>', methods=['POST'])
+@files_bp.route('/shred/<int:file_id>', methods=['GET', 'POST'])
 def shred_file(file_id):
+    if not check_action_grant(file_id, 'shred'):
+        flash('Shred unauthorized or grant expired. Please verify again.', 'danger')
+        return redirect(url_for('files.dashboard'))
+        
     record = FileRecord.query.get_or_404(file_id)
     if record.owner_id != session['user_id']:
         abort(403)

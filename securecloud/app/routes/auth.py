@@ -157,13 +157,14 @@ def mfa():
         totp_code = request.form.get('totp_code')
         email_code = request.form.get('email_code')
         
+        # Always verify TOTP as the second factor
+        if not verify_totp(user.totp_secret, totp_code):
+            flash('Invalid TOTP code.', 'danger')
+            return redirect(url_for('auth.mfa'))
+            
         if risk_label == 'HIGH':
             if not verify_email_otp(user.id, email_code):
                 flash('Invalid or expired Email OTP.', 'danger')
-                return redirect(url_for('auth.mfa'))
-        else:
-            if not verify_totp(user.totp_secret, totp_code):
-                flash('Invalid TOTP code.', 'danger')
                 return redirect(url_for('auth.mfa'))
                 
         # Success
@@ -180,28 +181,6 @@ def mfa():
         return redirect(url_for('files.dashboard'))
         
     return render_template('mfa.html', risk=risk_label)
-
-@auth_bp.route('/passkey_login', methods=['POST'])
-def passkey_login():
-    user_id = session.get('mfa_user_id')
-    event_id = session.get('login_event_id')
-    if not user_id:
-        return redirect(url_for('auth.login'))
-        
-    user = User.query.get(user_id)
-    event = LoginEvent.query.get(event_id)
-    
-    record_successful_login(user)
-    event.outcome = 'success'
-    db.session.commit()
-    
-    session.pop('mfa_user_id')
-    session['user_id'] = user.id
-    
-    # Dispatch official SMTP email
-    send_real_email(user.email, "New Passkey Login Alert - SecureCloud", f"A successful login via Hardware Passkey was detected on your account from IP {event.ip}.")
-    flash(f'Hardware Passkey verified successfully. A security alert email was officially sent to {user.email}.', 'success')
-    return redirect(url_for('files.dashboard'))
         
 @auth_bp.route('/logout')
 def logout():
