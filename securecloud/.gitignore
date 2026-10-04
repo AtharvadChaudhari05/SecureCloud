@@ -7,3 +7,5 @@ instance/
 *.db
 securecloud.db
 uploads/
+storage/
+!storage/.gitkeep
