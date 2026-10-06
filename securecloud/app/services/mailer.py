@@ -59,12 +59,35 @@ def send_real_email(to_email: str, subject: str, body: str):
         return False
         
     try:
-        msg = MIMEMultipart()
+        msg = MIMEMultipart('alternative')
         msg['From'] = f"SecureCloud AI <{sender_email}>"
         msg['To'] = to_email
         msg['Subject'] = subject
         
+        # Plain text fallback
         msg.attach(MIMEText(body, 'plain'))
+        
+        # Professional HTML version
+        html_body = f"""
+        <html>
+          <body style="font-family: Arial, sans-serif; background-color: #f4f4f5; padding: 20px;">
+            <div style="max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+              <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #18181b; margin: 0;">SecureCloud</h2>
+                <p style="color: #71717a; margin-top: 5px;">Zero-Trust Security Notification</p>
+              </div>
+              <div style="background: #fafafa; border-left: 4px solid #eab308; padding: 15px; margin-bottom: 20px; color: #3f3f46; font-size: 16px; line-height: 1.5;">
+                {body.replace(chr(10), '<br>')}
+              </div>
+              <p style="color: #a1a1aa; font-size: 12px; text-align: center;">
+                This is an automated security alert from SecureCloud ML Risk Engine.<br>
+                Do not reply to this email.
+              </p>
+            </div>
+          </body>
+        </html>
+        """
+        msg.attach(MIMEText(html_body, 'html'))
         
         # Connect to Gmail SMTP server
         server = smtplib.SMTP('smtp.gmail.com', 587)
